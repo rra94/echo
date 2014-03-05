@@ -1,0 +1,84 @@
+<html>
+	<body>
+		<h1>Press the play button to begin recording:</h1>
+		<div id="test"></div>
+		Wait till the text appears then press stop.<br><br> 
+		After that you can listen to your recording through the player below.<br><br>
+		you can also download your recorded file by clicking the Download.wav link. <br><br>
+		<audio controls ></audio>
+
+		<script type="text/javascript" src="recorder.js"> </script>
+		<script src="webspeech.js"></script>
+		<input onclick="startRecording()" type="button" value="start recording" />
+		<input onclick="stopRecording()" type="button" value="stop" />
+		<div id="status">
+		</div>
+		  <span id="interim_span" style="color:gray"></span>
+  		<span id="input_field" style="color:black"></span>
+		
+		<script>
+			var onFail = function(e) {
+				console.log('Rejected!', e);
+			};
+
+			var onSuccess = function(s) {
+				var context = new webkitAudioContext();
+				var mediaStreamSource = context.createMediaStreamSource(s);
+				recorder = new Recorder(mediaStreamSource);
+				recorder.record();
+
+				// audio loopback
+				// mediaStreamSource.connect(context.destination);
+			}
+
+			window.URL = window.URL || window.webkitURL;
+			navigator.getUserMedia  = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia || navigator.msGetUserMedia;
+
+			var recorder;
+			var audio = document.querySelector('audio');
+
+
+var reco = new WebSpeechRecognition();
+
+
+
+
+			function startRecording() {
+				if (navigator.getUserMedia) {
+					navigator.getUserMedia({audio: true}, onSuccess, onFail);
+				} else {
+					console.log('navigator.getUserMedia not present');
+				}
+			reco.statusText('status');
+			 reco.start();
+			reco.interimResults('interim_span');
+			reco.finalResults('input_field');
+			reco.continuous = true;
+						document.getElementByID('test').innerHTML=reco.final_transcript;
+
+			document.getElementsByID('c').src= 'http://tts-api.com/tts.mp3?q='+reco.finalResults();
+
+			}
+
+			function stopRecording() {
+				reco.stop()||recorder.stop();
+				recorder.exportWAV(function(s) {
+				var url= window.URL.createObjectURL(s);
+				audio.src= url;
+			
+	var link = document.createElement("a");
+	link.href =url;
+	link.download='download'+'.wav';
+	link.innerHTML= link.download ;
+	document.body.appendChild(link);
+
+
+    				});
+			}
+
+		</script>
+
+
+
+	</body>
+</html>
